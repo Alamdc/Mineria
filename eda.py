@@ -1,78 +1,79 @@
+import os
+from pathlib import Path
+
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-import os # Importamos la librería 'os' para manejo de carpetas
 
-# --- 1. Definir la carpeta de salida ---
-output_folder = "graficas_eda"
-os.makedirs(output_folder, exist_ok=True)
-print(f"Los gráficos se guardarán en la carpeta: '{output_folder}'")
+# 1. RUTAS Y CARGA DE DATOS
 
-# Set plot style
-sns.set(style="whitegrid")
+# Ruta del archivo CSV (ajústala si lo tienes en otra carpeta)
+DATA_PATH = Path("muestra4s.csv")
 
-# Cargar el dataset
-try:
-    df = pd.read_csv("muestra4s.csv")
+# Carpeta donde se guardarán las gráficas
+OUTPUT_DIR = Path("resultados_mineria") / "graficas"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)  # Crea la carpeta si no existe
 
-    # --- 2. Inspección Inicial ---
-    print("\n--- Información General del DataFrame ---")
-    df.info()
-    print("\n--- Primeras 5 Filas del DataFrame ---")
-    print(df.head())
+print(f"Archivo de datos: {DATA_PATH.resolve()}")
+print(f"Carpeta de salida: {OUTPUT_DIR.resolve()}")
 
-    # Definir columnas de características (excluyendo 'id')
-    if 'id' in df.columns:
-        features = df.columns.drop('id')
-        data_for_analysis = df[features]
-    else:
-        features = df.columns
-        data_for_analysis = df.copy()
-        print("\nAdvertencia: No se encontró la columna 'id'. Se usarán todas las columnas como características.")
+# Cargar datos
+df = pd.read_csv(DATA_PATH)
 
-    # --- 3. Estadísticas Descriptivas ---
-    print("\n--- Estadísticas Descriptivas de los Sensores ---")
-    print(data_for_analysis.describe())
+# 2. INFO GENERAL DEL DATASET
 
-    # --- 4. Calidad de Datos (Nulos y Duplicados) ---
-    print("\n--- Conteo de Valores Nulos por Columna ---")
-    print(data_for_analysis.isnull().sum())
-    print(f"\n--- Conteo de Filas Duplicadas (solo en sensores) ---")
-    print(f"Número de filas duplicadas: {data_for_analysis.duplicated().sum()}")
+print("\n=== Shape del DataFrame ===")
+print(df.shape)
 
-    # --- 5. Visualizaciones (guardando en la carpeta) ---
+print("\n=== Primeras filas ===")
+print(df.head())
 
-    # Histogramas
-    print("\nGenerando histogramas...")
-    plt.figure(figsize=(12, 8))
-    data_for_analysis.hist(bins=30, layout=(2, 2), figsize=(12, 8))
-    plt.suptitle('Histogramas de Distribución de los Sensores', y=1.02)
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_folder, 'sensor_histograms.png'))
-    plt.clf() 
+print("\n=== Info ===")
+df.info()
 
-    # Mapa de Calor de Correlación
-    print("Generando mapa de calor de correlación...")
-    corr_matrix = data_for_analysis.corr()
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f', vmin=-1, vmax=1)
-    plt.title('Mapa de Calor de Correlación entre Sensores')
-    plt.savefig(os.path.join(output_folder, 'sensor_correlation_heatmap.png'))
-    plt.clf()
+print("\n=== Descriptivos ===")
+print(df.describe())
 
-    # Pair Plot (Gráfico de Pares)
-    print("Generando pair plot...")
-    pairplot_fig = sns.pairplot(data_for_analysis)
-    pairplot_fig.fig.suptitle('Pair Plot de los Sensores', y=1.02)
-    plt.savefig(os.path.join(output_folder, 'sensor_pairplot.png'))
-    plt.clf() 
+print("\n=== Valores nulos por columna ===")
+print(df.isna().sum())
 
-    print(f"\n--- EDA completado. Se generaron 3 gráficos en la carpeta '{output_folder}': ---")
-    print(f"1. {os.path.join(output_folder, 'sensor_histograms.png')}")
-    print(f"2. {os.path.join(output_folder, 'sensor_correlation_heatmap.png')}")
-    print(f"3. {os.path.join(output_folder, 'sensor_pairplot.png')}")
+# Opcional: guardar resumen descriptivo a CSV
+df.describe().to_csv(OUTPUT_DIR / "resumen_descriptivo.csv", index=True)
 
-except FileNotFoundError:
-    print("Error: El archivo 'muestra4s.csv' no se encontró.")
-except Exception as e:
-    print(f"Ocurrió un error: {e}")
+# 3. SELECCIÓN DE VARIABLES NUMÉRICAS
+
+# Quitamos 'id' para los análisis de sensores
+sensor_cols = ["sensor1", "sensor2", "sensor3", "sensor4"]
+num_df = df[sensor_cols]
+
+# 4. HISTOGRAMAS POR SENSOR
+
+plt.figure(figsize=(10, 8))
+num_df.hist(bins=20, figsize=(10, 8))
+plt.tight_layout()
+
+hist_path = OUTPUT_DIR / "histogramas_sensores.png"
+plt.savefig(hist_path, dpi=300)
+plt.close()
+
+print(f"Histograma guardado en: {hist_path}")
+
+# 5. MATRIZ DE CORRELACIÓN
+
+corr = num_df.corr()
+print("\n=== Matriz de correlación ===")
+print(corr)
+
+plt.figure(figsize=(6, 5))
+plt.imshow(corr, interpolation="nearest")
+plt.colorbar()
+plt.xticks(range(len(corr.columns)), corr.columns, rotation=90)
+plt.yticks(range(len(corr.columns)), corr.columns)
+plt.title("Matriz de correlación - Sensores")
+plt.tight_layout()
+
+corr_path = OUTPUT_DIR / "matriz_correlacion_sensores.png"
+plt.savefig(corr_path, dpi=300)
+plt.close()
+
+print(f"Matriz de correlación guardada en: {corr_path}")
+
