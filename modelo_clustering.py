@@ -6,9 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
-# ==========================================================
 # 1. RUTAS Y CARGA DE DATOS TRANSFORMADOS (ESTANDARIZADOS)
-# ==========================================================
 
 BASE_DIR = Path(__file__).resolve().parent
 data_path = BASE_DIR / "Transformacion Estadistica" / "datos_transformados" / "sensores_estandarizados.csv"
@@ -21,9 +19,8 @@ X = df[sensor_cols]
 OUTPUT_DIR = Path("aprendizaje_Automatico") / "modelos"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# ==========================================================
+
 # 2. PCA - REDUCCIÓN A 2 COMPONENTES
-# ==========================================================
 
 pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X)
@@ -33,9 +30,7 @@ df_pca.to_csv(OUTPUT_DIR / "pca_componentes.csv", index=False)
 
 print("PCA realizado. Componentes guardados.")
 
-# ==========================================================
 # 3. K-MEANS PARA DIFERENTES k
-# ==========================================================
 
 k_values = [3, 4, 5, 15]
 resultados = []
@@ -65,9 +60,7 @@ for k in k_values:
 
 print("K-Means finalizado. Clusters y gráficas guardadas.")
 
-# ==========================================================
 # 4. GUARDAR TABLA DE SILHOUETTE
-# ==========================================================
 
 df_resultados = pd.DataFrame(resultados, columns=["k", "silhouette"])
 df_resultados.to_csv(OUTPUT_DIR / "silhouette_scores.csv", index=False)
