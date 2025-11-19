@@ -6,12 +6,12 @@ import matplotlib.pyplot as plt
 
 # 1. RUTAS Y CARGA DE DATOS
 
-# Ruta del archivo CSV (ajústala si lo tienes en otra carpeta)
+# Ruta del archivo CSV 
 DATA_PATH = Path("muestra4s.csv")
 
 # Carpeta donde se guardarán las gráficas
 OUTPUT_DIR = Path("resultados_mineria") / "graficas"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)  # Crea la carpeta si no existe
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)  
 
 print(f"Archivo de datos: {DATA_PATH.resolve()}")
 print(f"Carpeta de salida: {OUTPUT_DIR.resolve()}")
@@ -36,7 +36,7 @@ print(df.describe())
 print("\n=== Valores nulos por columna ===")
 print(df.isna().sum())
 
-# Opcional: guardar resumen descriptivo a CSV
+# guardar resumen descriptivo a CSV
 df.describe().to_csv(OUTPUT_DIR / "resumen_descriptivo.csv", index=True)
 
 # 3. SELECCIÓN DE VARIABLES NUMÉRICAS
